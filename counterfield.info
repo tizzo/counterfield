@@ -1,0 +1,7 @@
+; $Id$
+name = CounterField
+description = Similar to the US debt calculator.  Provides a counter field that counts up or down at a given rate.
+dependencies[] = content
+dependencies[] = date_popup
+package = CCK
+core = 6.x

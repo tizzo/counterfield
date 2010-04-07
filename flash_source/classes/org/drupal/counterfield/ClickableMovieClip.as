@@ -1,0 +1,1 @@
+﻿package org.drupal.counterfield{	import flash.display.MovieClip;	public class ClickableMovieClip extends MovieClip {		function ClickableMovieClip():void {			this.buttonMode = true;			this.useHandCursor = true;  		}	}}

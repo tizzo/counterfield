@@ -1,0 +1,537 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ *   Provide the counterfield content type for providing counters that count up and down.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function counterfield_menu() {
+  $items['counterfield/json/node/%node/%/%'] = array(
+    'page callback' => 'counterfield_field_render_json_node',
+    'page arguments' => array(3, 4, 5),
+    'access callback' => TRUE,
+    'description' => 'Ajax callback for view loading.',
+    'type' => MENU_CALLBACK,
+  );
+  $items['counterfield/json/block/%'] = array(
+    'page callback' => 'counterfield_field_render_json_block',
+    'page arguments' => array(3),
+    'access callback' => TRUE,
+    'description' => 'Ajax callback for view loading.',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/counterfield'] = array(
+    'title' => 'Counterfield Settings',
+    'description' => 'Create and delete coutner blocks.',
+    'page callback' => 'counterfield_block_listing',
+    'access arguments' => array('administer counterfield blocks'),
+    'file' => 'counterfield.admin.inc',
+  );
+  $items['admin/settings/counterfield/%/edit'] = array(
+    'title' => 'Edit A Counter Block',
+    'page callback' => 'counterfield_block_edit_page',
+    'page arguments' => array(3),
+    'access arguments' => array('administer counterfield blocks'),
+    'weight' => 1,
+    'file' => 'counterfield.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/counterfield/add'] = array(
+    'title' => 'Add a Counter Block',
+    'page callback' => 'counterfield_block_edit_page',
+    'page arguments' => array(3),
+    'access arguments' => array('administer counterfield blocks'),
+    'weight' => 2,
+    'file' => 'counterfield.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function counterfield_block($op = 'list', $delta = 0, $edit = array()) {
+  // All counterfield blocks are stored 
+  // in this variable as a multidimensional array.
+  $counterfield_blocks = variable_get('counterfield_blocks', array());
+  if (isset($counterfield_blocks[$delta])) {
+    $setting = $counterfield_blocks[$delta];
+  }
+  switch ($op) {
+    case 'list':
+      foreach ($counterfield_blocks as $name => $settings) {
+        $blocks[$name] = array(
+          'info' => t('Counterfield: ' . $settings['title']),
+          'cache' => BLOCK_NO_CACHE,
+        );
+      }
+      return $blocks;
+    case 'view':
+      if (isset($counterfield_blocks[$delta])) {
+        $setting = $counterfield_blocks[$delta];
+        $block['subject'] = $setting['name'];
+        $block['content'] = theme('counterfield_formatter_' . $setting['formatter'], $setting);
+      }
+      return $block;
+    case 'configure':
+      module_load_include('inc', 'counterfield', 'counterfield.admin');
+      $form['name'] = array(
+        '#type' => 'value',
+        '#value' => $arg,
+      );
+      $form['counterfield_setting'] = array(
+        '#type' => 'value',
+        '#value' => serialize($setting),
+      );
+      $form = counterfield_block_form(NULL, $form);
+      unset($form['submit']);
+      return $form;
+    case 'save':
+      $form = counterfield_block_form();
+      unset($form['submit']);
+      foreach ($edit as $name => $value) {
+        // Only save our values.
+        if (!array_key_exists($name, $form)) {
+          unset($edit[$name]);
+        }
+      }
+      $counterfield_blocks[$delta] = $edit;
+      $counterfield_blocks[$delta]['name'] = $delta;
+      $counterfield_blocks[$delta]['changed'] = time();
+      variable_set('counterfield_blocks', $counterfield_blocks);
+      return;
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function counterfield_perm() {
+  $perm = array(
+    'administer counterfield blocks',
+  );
+  return $perm;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function counterfield_theme() {
+  return array(
+    'counterfield_formatter_default' => array(
+      'arguments' => array(
+        'element' => NULL,
+      ),
+    ),
+    'counterfield_formatter_small' => array(
+      'arguments' => array(
+        'element' => NULL,
+      ),
+    ),
+    'counterfield_formatter_large' => array(
+      'arguments' => array(
+        'element' => NULL,
+      ),
+    ),
+    'counterfield_template' => array(
+      'arguments' => array(
+        'element' => NULL
+      ),
+      'template' => 'counterfield-template',
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_info().
+ */
+function counterfield_field_info() {
+  return array(
+    'counterfield' => array(
+      'label' => t('CounterField'),
+      'description' => t('Provide a ticker that counts up or down.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_field_settings().
+ */
+function counterfield_field_settings($op, $field) {
+  switch ($op) {
+    case 'database columns':
+      return array(
+        /*
+        'format' => array(
+          'description' => t('The type of thing to count (time, money, etc.).'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'desc' => array(
+          'description' => t('Count up or down'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),*/
+        'start_number' => array(
+          'description' => t('The value this field has currently.'),
+          'type' => 'numeric',
+          'precision' => 15,
+          'scale' => 3,
+          'not null' => TRUE,
+          'default' => 0.0,
+        ),
+        'rate' => array(
+          'description' => t('The rate to count up or down.'),
+          'type' => 'numeric',
+          'precision' => 15,
+          'scale' => 3,
+          'not null' => TRUE,
+        ),
+        'link' => array(
+          'description' => t('The link Learn More should direct to.'),
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+        ),       /*
+        'end_number' => array(
+          'type' => 'numeric',
+          'precision' => 15,
+          'scale' => 3,
+          'not null' => TRUE,
+        ),
+        'prefix' => array(
+          'description' => t('A prefix to place before the counter.'),
+          'type' => 'varchar',
+          'length' => 255,
+          'default' => '',
+          'not null' => TRUE,
+        ),
+        'suffix' => array(
+          'description' => t('A suffix to place after the counter.'),
+          'type' => 'varchar',
+          'length' => 255,
+          'default' => '',
+          'not null' => TRUE,
+        ),
+        'expiration' => array(
+          'description' => t('The expiration date of the counterfield.'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'data' => array(
+          'type' => 'text',
+          'size' => 'big',
+        ),
+        */
+    );
+  }
+}
+
+/**
+ * Implementation of hook_field().
+ */
+function counterfield_field($op, &$node, $field, &$items, $teaser, $page) {
+  switch ($op) {
+    // Do validation on the field values here. The widget 
+    // will do its own validation and you cannot make any 
+    // assumptions about what kind of widget has been used, 
+    // so don't validate widget values, only field values.
+    case 'validate':
+      if (is_array($items)) {
+        foreach ($items as $delta => $item) {
+          // The error_element is needed so that CCK can 
+          // set an error on the right sub-element when 
+          // fields are deeply nested in the form.
+          $error_element = isset($item['_error_element']) ? $item['_error_element'] : '';
+          if (is_array($item) && isset($item['_error_element'])) unset($item['_error_element']);
+          //form_set_error($error_element, t('Invalid counter data provided.'));
+        }
+      }
+      return $items;
+
+    case 'presave':
+      foreach($items as $delta => $item) {
+      }
+      return $items;
+
+    case 'sanitize':
+      foreach ($items as $delta => $item) {
+        foreach ($item as $field_name => $field) {
+          // Our values should never have special characters, escape 'em all.
+          $items[$delta][$field_name] = check_plain($field);
+        }
+      }
+  }
+}
+
+/**
+ * Implementation of hook_content_is_empty().
+ */
+function counterfield_content_is_empty($item, $field) {
+  return FALSE;
+
+  if (!is_numeric($field['start_number']) || !is_numeric($field['rate'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function counterfield_field_formatter_info() {
+
+  return array(
+    'small' => array(
+      'label' => t('Small Counterfield'),
+      'field types' => array('counterfield'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'default' => array(
+      'label' => t('Medium Counterfield'),
+      'field types' => array('counterfield'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'large' => array(
+      'label' => t('Large Counterfield'),
+      'field types' => array('counterfield'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+  );
+}
+
+/**
+ * Theme function for 'default' counterfield field formatter.
+ */
+function theme_counterfield_formatter_default($element) {
+  return theme('counterfield_template', $element);
+}
+
+/**
+ * Theme function for 'default' counterfield field formatter.
+ */
+function theme_counterfield_formatter_small($element) {
+  return theme('counterfield_template', $element);
+}
+
+/**
+ * Theme function for 'default' counterfield field formatter.
+ */
+function theme_counterfield_formatter_large($element) {
+  return theme('counterfield_template', $element);
+}
+
+/**
+ * Prepare 
+ */
+function counterfield_prepare_data_node($vars) {
+  $element = $vars['element'];
+  $data['json_path'] = 'node/' . $element['#node']->nid . '/' . $element['#field_name'] . '/' . $element['#item']['#delta'];
+  $data['formatter'] = $vars['element']['#formatter'];
+  $data['rate'] = $element['#item']['rate'];
+  $data['start_number'] = counterfield_calculate_current_start_value($element['#node']->changed, $element['#item']['start_number'], $element['#item']['rate']);
+  return $data;
+}
+
+/**
+ *
+ */
+function counterfield_prepare_data_block($vars) {
+  $data = $vars['element'];
+  $data['json_path'] = 'block/' . $data['name'];
+  $data['start_number'] = counterfield_calculate_current_start_value($data['changed'], $data['start_number'], $data['rate']);
+  return $data;
+}
+
+/**
+ * Template preprocess function for the counterfield template.
+ */
+function counterfield_preprocess_counterfield_template(&$vars) {
+  // Add necessary CSS.
+  global $base_url;
+  $path = drupal_get_path('module', 'counterfield');
+  drupal_add_css($path . '/counterfield.css'); 
+
+  // Add necessary variables.
+  static $unique_number = 0;
+  $unique_number++;
+  $vars['counterfield_unique_id'] = $unique_number;
+  // If this is a normal CCK field, prepare the necessary data.
+  if (isset($vars['element']['#node'])) {
+    $data = counterfield_prepare_data_node($vars);
+  }
+  // If this is not a normal CCK field, it is a block, prepare the necessary data.
+  else {
+    $data = counterfield_prepare_data_block($vars);
+  }
+
+  $vars['start_number'] = $data['start_number'];
+
+  // Add necessary JS.
+  counterfield_add_js();
+  $json_path = $base_url . '/counterfield/json/' . $data['json_path'];
+
+  // Set the width and height.
+  switch ($data['formatter']) {
+    case 'default':
+      $width = 680;
+      $height = 220;
+      break;
+    case 'small':
+      $width = 300;
+      $height = 100;
+      break;
+    case 'large':
+      $width = 900;
+      $height = 290;
+      break;
+  }
+
+  // Create and add the settings specific to this counter.
+  $settings['counterfields'][] = array(
+    'pathToJSON' => $json_path,
+    'pathToSWF' => $base_url  . '/' . drupal_get_path('module', 'counterfield') . '/swf/counterfield.swf',
+    'uniqueDIV' => 'counter-field-' . $unique_number,
+    'width' => $width,
+    'height' => $height,
+    'rate' => $data['rate'],
+    'start_number' => $data['start_number'],
+  );
+  drupal_add_js($settings, 'setting');
+}
+
+/**
+ * Implementation of hook_widget_info().
+ */
+function counterfield_widget_info() {
+  return array(
+    'counterfield_widget' => array(
+      'label' => t('Counterfield Widget'),
+      'field types' => array('counterfield'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+      'callbacks' => array(
+        'default value' => CONTENT_CALLBACK_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_widget_settings().
+ */
+function counterfield_widget_settings($op, $widget) {
+  switch ($op) {
+     case 'save':
+      return array('size');
+  }
+}
+
+/**
+ * Implementation of hook_widget().
+ */
+function counterfield_widget(&$form, &$form_state, $field, $items, $delta = 0) {
+  // If we have all relevant data, calculate the current start number.
+  if (isset($items[$delta]['start_number']) && isset($items[$delta]['rate']) && isset($form['changed']['#default_value'])) {
+    $start_number = counterfield_calculate_current_start_value($form['changed']['#default_value'], $items[$delta]['start_number'], $items[$delta]['rate']);
+  }
+  $element['start_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start number'),
+    '#default_value' =>  $start_number ? $start_number : NULL,
+  );
+  $element['rate'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Rate to increment the counter (in dollars per hour)'),
+    '#default_value' => isset($items[$delta]['rate']) ? $items[$delta]['rate'] : NULL,
+  );
+  $element['link'] = array(
+    '#type' => 'textfield',
+    '#title' => t('The destination of the \'Lear More\' link'),
+    '#default_value' => isset($items[$delta]['link']) ? $items[$delta]['link'] : NULL,
+  );
+  if (empty($form['#parents'])) {
+    $form['#parents'] = array();
+  }
+  $element['_error_element'] = array(
+    '#type' => 'value',
+    '#value' => implode('][', array_merge($form['#parents'], array('value'))),
+  );
+  return $element;
+}
+
+/**
+ *
+ */
+function counterfield_calculate_current_start_value($starting_date, $previous_value, $rate) {
+  // Time - Starting date gives us the number of seconds that have passed, divided by 3600 we
+  // the number of hours and multiplied by the rate-per-hour we get the current value appropriate.
+  return  $previous_value + ((time() - $starting_date) / 3600) * $rate;
+;
+}
+
+/**
+ * Add necessary javascript files.
+ */
+function counterfield_add_js() {
+  $path = drupal_get_path('module', 'counterfield');
+  drupal_add_js($path . '/swfobject/swfobject.js', 'module');
+  drupal_add_js($path . '/counterfield.js', 'module');
+}
+
+/**
+ * Render a json representation of the counter field for a specific field instance.
+ */
+function counterfield_field_render_json_node($node, $field, $delta) {
+  if (isset($node->{$field}[$delta])) {
+    global $base_url;
+    $path = $base_url . '/' . drupal_get_path('module', 'counterfield');
+    $return = array(
+      'currentValue' => counterfield_calculate_current_start_value($node->changed, $node->{$field}[$delta]['start_number'], $node->{$field}[$delta]['rate']),
+      'rate' => $node->{$field}[$delta]['rate'],
+      'moreInfoURL' => $node->{$field}[$delta]['link'],
+      'swfPath' => $path . '/swf/counterfield.swf',
+    );
+  }
+  else {
+    $return = array('error' => t('Invalid selection'));
+  }
+  drupal_set_header("Content-type: application/json");
+  print json_encode($return);
+  exit;
+}
+
+/**
+ * Render a json representation of a counter block for a specific field instance.
+ */
+function counterfield_field_render_json_block($block_name) {
+  $settings = variable_get('counterfield_blocks', array());
+  if (isset($settings[$block_name])) {
+    $setting = $settings[$block_name];
+    global $base_url;
+    $path = $base_url . '/' . drupal_get_path('module', 'counterfield');
+    $return = array(
+      'currentValue' => counterfield_calculate_current_start_value($setting['changed'], $setting['start_number'], $setting['rate']),
+      'rate' => $setting['rate'],
+      'moreInfoURL' => $setting['link'],
+      'swfPath' => $path . '/swf/counterfield.swf',
+    );
+  }
+  else {
+    $return = array('error' => t('Invalid selection'));
+  }
+  drupal_set_header("Content-type: application/json");
+  print json_encode($return);
+  exit;
+}

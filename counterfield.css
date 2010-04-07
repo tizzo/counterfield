@@ -1,0 +1,25 @@
+/**
+ * @file
+ *   Provide default styling for each license field when it is displayed.
+ */
+.cecbems-license h4 {
+  margin: 0 0 0 10px;
+}
+
+.cecbems-license-content {
+  margin: 10px;
+  padding: 10px;
+  border: 2px solid #0588C6;
+  background: #00538C;
+}
+
+.cecbems-license-content span.label {
+  display: block;
+  font-weight: bold;
+  padding-top: .25em;
+}
+
+.cecbems-license-content span.value {
+  display: block;
+  font-weight: normal;
+}
