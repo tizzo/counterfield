@@ -87,7 +87,7 @@ function counterfield_block_form($form_state = NULL, $form = NULL) {
     '#description' => t('The human-readable name of this content type. This text will be displayed as part of the list on the <em>create content</em> page. It is recommended that this name begin with a capital letter and contain only letters, numbers, and <strong>spaces</strong>. This name must be unique.'),
     '#default_value' => $setting['title'] ? $setting['title'] : '',
     '#type' => 'textfield',
-    '#required' => TRUE,
+    '#required' => FALSE,
   );
   // If we have all relevant data, calculate the current start number.
   if (isset($setting['start_number']) && isset($setting['rate']) && isset($setting['changed'])) {

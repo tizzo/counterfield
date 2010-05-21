@@ -1,4 +1,4 @@
-<?php
+  <?php
 // $Id$
 
 /**
@@ -166,21 +166,6 @@ function counterfield_field_settings($op, $field) {
   switch ($op) {
     case 'database columns':
       return array(
-        /*
-        'format' => array(
-          'description' => t('The type of thing to count (time, money, etc.).'),
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'desc' => array(
-          'description' => t('Count up or down'),
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),*/
         'start_number' => array(
           'description' => t('The value this field has currently.'),
           'type' => 'numeric',
@@ -202,39 +187,7 @@ function counterfield_field_settings($op, $field) {
           'length' => 255,
           'not null' => TRUE,
           'default' => '',
-        ),       /*
-        'end_number' => array(
-          'type' => 'numeric',
-          'precision' => 15,
-          'scale' => 3,
-          'not null' => TRUE,
         ),
-        'prefix' => array(
-          'description' => t('A prefix to place before the counter.'),
-          'type' => 'varchar',
-          'length' => 255,
-          'default' => '',
-          'not null' => TRUE,
-        ),
-        'suffix' => array(
-          'description' => t('A suffix to place after the counter.'),
-          'type' => 'varchar',
-          'length' => 255,
-          'default' => '',
-          'not null' => TRUE,
-        ),
-        'expiration' => array(
-          'description' => t('The expiration date of the counterfield.'),
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'data' => array(
-          'type' => 'text',
-          'size' => 'big',
-        ),
-        */
     );
   }
 }
@@ -263,6 +216,7 @@ function counterfield_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'presave':
       foreach($items as $delta => $item) {
+        // TODO: Process dates, etc?
       }
       return $items;
 
@@ -281,7 +235,7 @@ function counterfield_field($op, &$node, $field, &$items, $teaser, $page) {
  */
 function counterfield_content_is_empty($item, $field) {
   return FALSE;
-
+  // TODO: Test this.
   if (!is_numeric($field['start_number']) || !is_numeric($field['rate'])) {
     return TRUE;
   }
@@ -292,7 +246,6 @@ function counterfield_content_is_empty($item, $field) {
  * Implementation of hook_field_formatter_info().
  */
 function counterfield_field_formatter_info() {
-
   return array(
     'small' => array(
       'label' => t('Small Counterfield'),
@@ -384,25 +337,32 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   $json_path = $base_url . '/counterfield/json/' . $data['json_path'];
 
   // Set the width and height.
+  // TODO: Templates need to be pluggable... work on this.
   switch ($data['formatter']) {
     case 'default':
       $width = 680;
       $height = 220;
+      $template = 'keystone-default';
       break;
     case 'small':
       $width = 300;
       $height = 100;
+      $template = 'keystone-small';
       break;
     case 'large':
       $width = 900;
       $height = 290;
+      $template = 'keystone-default';
       break;
   }
 
   // Create and add the settings specific to this counter.
+  $module_path = $base_url  . '/' . drupal_get_path('module', 'counterfield');
+  $template_path = $module_path . '/templates/' . $template . '/' . $template;
   $settings['counterfields'][] = array(
     'pathToJSON' => $json_path,
-    'pathToSWF' => $base_url  . '/' . drupal_get_path('module', 'counterfield') . '/swf/counterfield.swf',
+    'pathToSWF' =>  $module_path . 'flash/swf/counterfield.swf',
+    'pathToTemplate' => $template_path . '.swf',
     'uniqueDIV' => 'counter-field-' . $unique_number,
     'width' => $width,
     'height' => $height,
@@ -410,6 +370,8 @@ function counterfield_preprocess_counterfield_template(&$vars) {
     'start_number' => $data['start_number'],
   );
   drupal_add_js($settings, 'setting');
+  //drupal_add_css($template_path . '.css');
+  //$vars['counterfield_image'] = $template_path . '.png';
 }
 
 /**
@@ -526,6 +488,7 @@ function counterfield_field_render_json_block($block_name) {
       'rate' => $setting['rate'],
       'moreInfoURL' => $setting['link'],
       'swfPath' => $path . '/swf/counterfield.swf',
+      'templateInclude' => $setting['template'],
     );
   }
   else {
@@ -533,5 +496,5 @@ function counterfield_field_render_json_block($block_name) {
   }
   drupal_set_header("Content-type: application/json");
   print json_encode($return);
-  exit;
+  return FALSE;
 }
