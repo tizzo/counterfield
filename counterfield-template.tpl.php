@@ -11,8 +11,7 @@
  *   Available fields:  
  */
 ?>
-<div id="counter-field-<?php print $counterfield_unique_id; ?>">
+<div class="counterfield-<?php print $counterfield_template; ?>" id="counter-field-<?php print $counterfield_unique_id; ?>">
   <h3><?php print t('Severance Tax Delay Costs Pennsylvania'); ?></h3>
   <h4><?php print number_format($start_number); ?></h4>
-  <p><?php print l('Learn More', $link); ?></p>
 </div>

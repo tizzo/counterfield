@@ -336,25 +336,13 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   counterfield_add_js();
   $json_path = $base_url . '/counterfield/json/' . $data['json_path'];
 
-  // Set the width and height.
-  // TODO: Templates need to be pluggable... work on this.
-  switch ($data['formatter']) {
-    case 'default':
-      $width = 540;
-      $height = 170;
-      $template = 'keystone-default';
-      break;
-    case 'small':
-      $width = 300;
-      $height = 100;
-      $template = 'keystone-small';
-      break;
-    case 'large':
-      $width = 900;
-      $height = 290;
-      $template = 'keystone-default';
-      break;
-  }
+  // Get info for this formatter
+  $formatter_info = counterfield_get_formatter_info();
+  $info = $formatter_info[$data['formatter']];
+  $width = $info['width'];
+  $height = $info['height'];
+  $template = $info['template'];
+  $vars['counterfield_template'] = $template;
 
   // Create and add the settings specific to this counter.
   $module_path = $base_url  . '/' . drupal_get_path('module', 'counterfield');
@@ -370,8 +358,7 @@ function counterfield_preprocess_counterfield_template(&$vars) {
     'start_number' => $data['start_number'],
   );
   drupal_add_js($settings, 'setting');
-  //drupal_add_css($template_path . '.css');
-  //$vars['counterfield_image'] = $template_path . '.png';
+  drupal_add_css($template_path . '.css', 'module');
 }
 
 /**
@@ -459,11 +446,13 @@ function counterfield_field_render_json_node($node, $field, $delta) {
   if (isset($node->{$field}[$delta])) {
     global $base_url;
     $path = $base_url . '/' . drupal_get_path('module', 'counterfield');
+    $formatter_info = counterfield_get_formatter_info();
+    // TODO: finish getting formatter info here...
     $return = array(
       'currentValue' => counterfield_calculate_current_start_value($node->changed, $node->{$field}[$delta]['start_number'], $node->{$field}[$delta]['rate']),
       'rate' => $node->{$field}[$delta]['rate'],
       'moreInfoURL' => $node->{$field}[$delta]['link'],
-      'pathToTemplate' => $template,
+      'pathToTemplate' => $template_path,
     );
   }
   else {
@@ -479,17 +468,43 @@ function counterfield_field_render_json_block($block_name) {
   $settings = variable_get('counterfield_blocks', array());
   if (isset($settings[$block_name])) {
     $setting = $settings[$block_name];
+    $formatter_info = counterfield_get_formatter_info();
+    $template = $formatter_info[$setting['formatter']]['template'];
     global $base_url;
     $path = $base_url . '/' . drupal_get_path('module', 'counterfield');
     $return = array(
       'currentValue' => counterfield_calculate_current_start_value($setting['changed'], $setting['start_number'], $setting['rate']),
       'rate' => $setting['rate'],
       'moreInfoURL' => $setting['link'],
-      'pathToTemplate' => $template,
+      'pathToTemplate' => $path . '/templates/' . $template . '/' . $template . '.swf',
     );
   }
   else {
     $return = array('error' => t('Invalid selection'));
   }
   drupal_json($return);
+}
+
+/**
+ * Get a list of the counterfield formatter's info.
+ */
+function counterfield_get_formatter_info() {
+  $formatters = array(
+    'default' => array(
+      'width' => 540,
+      'height' => 170,
+      'template' => 'keystone-default',
+    ),
+    'small' => array(
+      'width' => 300,
+      'height' => 100,
+      'template' => 'keystone-small',
+    ),
+    'large' => array(
+      'width' => 900,
+      'height' => 290,
+      'template' => 'keystone-default',
+    ),
+  );
+  return $formatters;
 }
