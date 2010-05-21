@@ -148,6 +148,21 @@ function counterfield_theme() {
 }
 
 /**
+ * Implementation of hook_forms().
+ */
+function counterfield_forms($form_id, $args) {
+  return array();
+  if (preg_match('/counterfield_block_(.*)_delete_form/', $form_id, $matches)) {
+    $name = $matches[1];
+    $forms['counterfield_block_' . $name . '_delete_form'] = array(
+      'callback' => 'counterfield_block_delete_form',
+      'callback arguments' => array($name),
+    );
+    return $forms;
+  }
+}
+
+/**
  * Implementation of hook_field_info().
  */
 function counterfield_field_info() {

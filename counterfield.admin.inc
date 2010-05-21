@@ -154,20 +154,6 @@ function counterfield_block_form_submit($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_forms().
- */
-function counterfield_forms($form_id, $args) {
-  if (preg_match('/counterfield_block_(.*)_delete_form/', $form_id, $matches)) {
-    $name = $matches[1];
-    $forms['counterfield_block_' . $name . '_delete_form'] = array(
-      'callback' => 'counterfield_block_delete_form',
-      'callback arguments' => array($name),
-    );
-    return $forms;
-  }
-}
-
-/**
  * Provide the counterfield delete form.
  */
 function counterfield_block_delete_form($form, $name=NULL) {
