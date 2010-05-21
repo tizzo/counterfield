@@ -74,7 +74,7 @@ function counterfield_block($op = 'list', $delta = 0, $edit = array()) {
     case 'view':
       if (isset($counterfield_blocks[$delta])) {
         $setting = $counterfield_blocks[$delta];
-        $block['subject'] = $setting['name'];
+        $block['subject'] = $setting['title'];
         $block['content'] = theme('counterfield_formatter_' . $setting['formatter'], $setting);
       }
       return $block;

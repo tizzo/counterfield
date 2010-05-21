@@ -15,8 +15,9 @@ function counterfield_block_listing() {
   $rows = array();
   if (count($settings)) {
     foreach ($settings as $setting) {
+      $title = ($setting['title'] ? $setting['title'] : $setting['name']);
       $rows[] = array(
-        'title' => $setting['title'],
+        'title' => $title,
         'edit' => l('Edit', 'admin/settings/counterfield/' . $setting['name'] . '/edit'),
         'delete' => drupal_get_form('counterfield_block_' . $setting['name'] . '_delete_form'),
       );
@@ -143,7 +144,7 @@ function counterfield_block_form_submit($form, &$form_state) {
   $settings = variable_get('counterfield_blocks', array());
   foreach($form_state['values'] as $name => $value) {
     // Store only the elements we care about.
-    if (in_array($name, array('name', 'title', 'start_number', 'rate', 'formatter'))) {
+    if (in_array($name, array('name', 'title', 'start_number', 'rate', 'formatter', 'link'))) {
       $settings[$form_state['values']['name']][$name] = $value;
     }
   }
