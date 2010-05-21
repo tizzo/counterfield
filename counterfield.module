@@ -230,7 +230,7 @@ function counterfield_field($op, &$node, $field, &$items, $teaser, $page) {
       return $items;
 
     case 'presave':
-      foreach($items as $delta => $item) {
+      foreach ($items as $delta => $item) {
         // TODO: Process dates, etc?
       }
       return $items;

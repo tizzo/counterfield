@@ -142,7 +142,7 @@ function counterfield_block_form_validate($form, &$form_state) {
  */
 function counterfield_block_form_submit($form, &$form_state) {
   $settings = variable_get('counterfield_blocks', array());
-  foreach($form_state['values'] as $name => $value) {
+  foreach ($form_state['values'] as $name => $value) {
     // Store only the elements we care about.
     if (in_array($name, array('name', 'title', 'start_number', 'rate', 'formatter', 'link'))) {
       $settings[$form_state['values']['name']][$name] = $value;
