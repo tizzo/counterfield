@@ -316,7 +316,6 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   global $base_url;
   $path = drupal_get_path('module', 'counterfield');
   drupal_add_css($path . '/counterfield.css'); 
-
   // Add necessary variables.
   static $unique_number = 0;
   $unique_number++;
@@ -345,12 +344,12 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   $vars['counterfield_template'] = $template;
 
   // Create and add the settings specific to this counter.
-  $module_path = $base_url  . '/' . drupal_get_path('module', 'counterfield');
+  $module_path = drupal_get_path('module', 'counterfield');
   $template_path = $module_path . '/templates/' . $template . '/' . $template;
   $settings['counterfields'][] = array(
     'pathToJSON' => $json_path,
     'pathToSWF' =>  $module_path . '/flash/swf/counterfield.swf',
-    'pathToTemplate' => $template_path . '.swf',
+    'pathToTemplate' => $base_url . '/' . $template_path . '.swf',
     'uniqueDIV' => 'counter-field-' . $unique_number,
     'width' => $width,
     'height' => $height,
@@ -358,7 +357,7 @@ function counterfield_preprocess_counterfield_template(&$vars) {
     'start_number' => $data['start_number'],
   );
   drupal_add_js($settings, 'setting');
-  drupal_add_css($template_path . '.css', 'module');
+  drupal_add_css($template_path . '.css');
 }
 
 /**
