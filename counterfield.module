@@ -340,8 +340,8 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   // TODO: Templates need to be pluggable... work on this.
   switch ($data['formatter']) {
     case 'default':
-      $width = 680;
-      $height = 220;
+      $width = 540;
+      $height = 170;
       $template = 'keystone-default';
       break;
     case 'small':
@@ -361,7 +361,7 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   $template_path = $module_path . '/templates/' . $template . '/' . $template;
   $settings['counterfields'][] = array(
     'pathToJSON' => $json_path,
-    'pathToSWF' =>  $module_path . 'flash/swf/counterfield.swf',
+    'pathToSWF' =>  $module_path . '/flash/swf/counterfield.swf',
     'pathToTemplate' => $template_path . '.swf',
     'uniqueDIV' => 'counter-field-' . $unique_number,
     'width' => $width,
@@ -463,15 +463,13 @@ function counterfield_field_render_json_node($node, $field, $delta) {
       'currentValue' => counterfield_calculate_current_start_value($node->changed, $node->{$field}[$delta]['start_number'], $node->{$field}[$delta]['rate']),
       'rate' => $node->{$field}[$delta]['rate'],
       'moreInfoURL' => $node->{$field}[$delta]['link'],
-      'swfPath' => $path . '/swf/counterfield.swf',
+      'pathToTemplate' => $template,
     );
   }
   else {
     $return = array('error' => t('Invalid selection'));
   }
-  drupal_set_header("Content-type: application/json");
-  print json_encode($return);
-  exit;
+  drupal_json($return);
 }
 
 /**
@@ -487,14 +485,11 @@ function counterfield_field_render_json_block($block_name) {
       'currentValue' => counterfield_calculate_current_start_value($setting['changed'], $setting['start_number'], $setting['rate']),
       'rate' => $setting['rate'],
       'moreInfoURL' => $setting['link'],
-      'swfPath' => $path . '/swf/counterfield.swf',
-      'templateInclude' => $setting['template'],
+      'pathToTemplate' => $template,
     );
   }
   else {
     $return = array('error' => t('Invalid selection'));
   }
-  drupal_set_header("Content-type: application/json");
-  print json_encode($return);
-  return FALSE;
+  drupal_json($return);
 }
