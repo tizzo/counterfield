@@ -6,7 +6,7 @@
         pathToJSONData: setting.pathToJSON, 
       };
       var params = { wmode: "transparent"};
-    //swfobject.embedSWF(setting.pathToSWF, setting.uniqueDIV, setting.width, setting.height, '9.0.0', '', flashvars, params);
+    swfobject.embedSWF(setting.pathToSWF, setting.uniqueDIV, setting.width, setting.height, '9.0.0', '', flashvars, params);
     var item = $('#' + setting.uniqueDIV + ' h4');
     counterfield_js_count(item, setting.start_number, setting.rate);
     }
