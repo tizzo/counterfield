@@ -65,8 +65,9 @@ function counterfield_block($op = 'list', $delta = 0, $edit = array()) {
   switch ($op) {
     case 'list':
       foreach ($counterfield_blocks as $name => $settings) {
+        $title = check_plain($settings['title'] ? $settings['title'] : $settings['name']);
         $blocks[$name] = array(
-          'info' => t('Counterfield: ' . $settings['title']),
+          'info' => t('Counterfield: !title', array('!title' => $title)),
           'cache' => BLOCK_NO_CACHE,
         );
       }
@@ -511,7 +512,7 @@ function counterfield_get_formatter_info() {
     ),
     'small' => array(
       'width' => 300,
-      'height' => 100,
+      'height' => 130,
       'template' => 'keystone-small',
     ),
     'large' => array(
