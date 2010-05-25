@@ -28,12 +28,17 @@ function counterfield_block_listing() {
     $rows[] = array(
       'title' => t($string, array('!add' => l('add', 'admin/settings/counterfield/add'))),
       'edit' => l('Add One', 'admin/settings/counterfield/add'),
-      'delete' => '',
+      'delete' => t('Delete'),
     );
   }
+  $path = drupal_get_path('module', 'counterfield');
+  drupal_add_css(drupal_get_path('module', 'counterfield') .'/counterfield.css');
   $header = array('title' => t('Title'), 'edit' => t('Edit'), 'delete' => t('Delete'));
-  $output = theme('table', $header, $rows);
+  // TODO: Make this whole function themeable.
+  $output = '<div id="counterfield-settings">';
+  $output .= theme('table', $header, $rows);
   $output .= drupal_get_form('counterfield_add_block_form');
+  $output .= '</div>';
   return $output;
 }
 
