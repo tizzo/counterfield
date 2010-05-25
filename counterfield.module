@@ -510,7 +510,7 @@ function counterfield_get_formatter_info() {
       'template' => 'keystone-default',
     ),
     'small' => array(
-      'width' => 300,
+      'width' => 220,
       'height' => 130,
       'template' => 'keystone-small',
     ),
