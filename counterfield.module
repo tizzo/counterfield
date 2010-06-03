@@ -411,6 +411,9 @@ function counterfield_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   if (isset($items[$delta]['start_number']) && isset($items[$delta]['rate']) && isset($form['changed']['#default_value'])) {
     $start_number = counterfield_calculate_current_start_value($form['changed']['#default_value'], $items[$delta]['start_number'], $items[$delta]['rate']);
   }
+  else {
+    $start_number = 0;
+  }
   $element['start_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Start number'),
