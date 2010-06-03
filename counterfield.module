@@ -366,7 +366,6 @@ function counterfield_preprocess_counterfield_template(&$vars) {
   $settings['counterfields'][] = array(
     'pathToJSON' => $json_path,
     'pathToSWF' =>  $base_url . '/' . $module_path . '/flash/swf/counterfield.swf',
-    'pathToTemplate' => $base_url . '/' . $template_path . '.swf',
     'uniqueDIV' => 'counter-field-' . $unique_number,
     'width' => $width,
     'height' => $height,

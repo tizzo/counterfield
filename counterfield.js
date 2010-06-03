@@ -4,6 +4,7 @@
       var setting = Drupal.settings.counterfields[i];
       var flashvars = {
         pathToJSONData: setting.pathToJSON, 
+        pathToSWF: setting.pathToSWF, 
       };
       var params = { wmode: "transparent"};
     swfobject.embedSWF(setting.pathToSWF, setting.uniqueDIV, setting.width, setting.height, '9.0.0', '', flashvars, params);
