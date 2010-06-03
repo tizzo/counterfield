@@ -161,7 +161,7 @@ function counterfield_block_form_submit($form, &$form_state) {
 /**
  * Provide the counterfield delete form.
  */
-function counterfield_block_delete_form($form, $name=NULL) {
+function counterfield_block_delete_form($form_state, $name=NULL) {
   $form['counterfield_block_name'] = array(
     '#type' => 'value',
     '#value' => $name,
