@@ -462,6 +462,11 @@ function counterfield_add_js() {
  */
 function counterfield_field_render_json_node($node, $field, $delta) {
   if (isset($node->{$field}[$delta])) {
+
+    // Disable caching for this page
+    global $GLOBALS;
+    $GLOBALS['conf']['cache'] = FALSE;
+
     global $base_url;
     $path = $base_url . '/' . drupal_get_path('module', 'counterfield');
     $formatter_info = counterfield_get_formatter_info();
@@ -485,6 +490,11 @@ function counterfield_field_render_json_node($node, $field, $delta) {
 function counterfield_field_render_json_block($block_name) {
   $settings = variable_get('counterfield_blocks', array());
   if (isset($settings[$block_name])) {
+
+    // Disable caching for this page
+    global $GLOBALS;
+    $GLOBALS['conf']['cache'] = FALSE;
+
     $setting = $settings[$block_name];
     $formatter_info = counterfield_get_formatter_info();
     $template = $formatter_info[$setting['formatter']]['template'];
